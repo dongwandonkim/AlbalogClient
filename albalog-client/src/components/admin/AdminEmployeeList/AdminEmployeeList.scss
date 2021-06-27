@@ -1,5 +1,4 @@
 .employeeList-container {
-  margin-left: 250px;
   padding: 2rem;
   background-color: #fafafa;
   height: 100%;
@@ -54,14 +53,13 @@
           .btn-detail {
             display: flex;
             align-items: center;
-            display: flex;
             width: 30%;
             justify-content: center;
             border: none;
             border-radius: 4px;
-            height: 1.5rem;
             color: white;
             background-color: #3da5f5;
+            padding: 0.25rem;
           }
         }
       }

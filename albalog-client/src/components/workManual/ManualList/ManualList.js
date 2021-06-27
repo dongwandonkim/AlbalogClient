@@ -1,81 +1,93 @@
-import axios from 'axios';
+import NoDataType1 from 'components/NoData/NoDataType1';
+import { setWorkManual } from 'modules/workManual';
 import React, { useEffect, useState } from 'react';
 import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
+import { connect, useDispatch, useSelector } from 'react-redux';
+import ManualEdit from '../ManualEdit/ManualEdit';
 
-const manualListFakeData = [
-  {
-    category: 'common',
-    title: '출근 후',
-    body: '<p>책상 닦기,</p><p>&nbsp;</p><p>빗자루로 홀 쓸기,</p><p>&nbsp;</p><p>마대로 바닥 닦기,</p><p>&nbsp;</p><p>쓰레기통 비우기</p>',
-  },
-  {
-    category: 'common',
-    title: '퇴근 30분 전',
-    body: '<p>책상 닦기,</p><p>&nbsp;</p><p>빗자루로 홀 쓸기,</p><p>&nbsp;</p><p>마대로 바닥 닦기,</p><p>&nbsp;</p><p>쓰레기통 비우기</p>',
-  },
-  {
-    category: 'field',
-    title: '손님 접대',
-    body: '<p>책상 닦기,</p><p>&nbsp;</p><p>빗자루로 홀 쓸기,</p><p>&nbsp;</p><p>마대로 바닥 닦기,</p><p>&nbsp;</p><p>쓰레기통 비우기</p>',
-  },
-  {
-    category: 'field',
-    title: '포스기 계산',
-    body: '<p>책상 닦기,</p><p>&nbsp;</p><p>빗자루로 홀 쓸기,</p><p>&nbsp;</p><p>마대로 바닥 닦기,</p><p>&nbsp;</p><p>쓰레기통 비우기</p>',
-  },
-  {
-    category: 'kitchen',
-    title: '주문 들어오면',
-    body: '<p>책상 닦기,</p><p>&nbsp;</p><p>빗자루로 홀 쓸기,</p><p>&nbsp;</p><p>마대로 바닥 닦기,</p><p>&nbsp;</p><p>쓰레기통 비우기</p>',
-  },
-  {
-    category: 'common',
-    title: '출근 후',
-    body: '<p>책상 닦기,</p><p>&nbsp;</p><p>빗자루로 홀 쓸기,</p><p>&nbsp;</p><p>마대로 바닥 닦기,</p><p>&nbsp;</p><p>쓰레기통 비우기</p>',
-  },
-];
-
-const ManualList = ({ category }) => {
+const ManualList = ({ category, user, shop }) => {
+  const workManual = useSelector((state) => state.workManual);
   const [manualList, setManualList] = useState([]);
-  console.log(category);
+  const [editState, setEditState] = useState(false);
+  const dispatch = useDispatch();
+
+  const ToggleButton = () => {
+    setEditState(!editState);
+  };
+
+  // 매뉴얼 수정 함수
+  const EditHandle = (manual) => {
+    let manualBody = {
+      _id: manual._id,
+      category_id: manual.category_id,
+      title: manual.title,
+      content: manual.content,
+    };
+
+    dispatch(setWorkManual(manualBody));
+    ToggleButton();
+  };
+
+  console.log(`category: ${category}`);
   useEffect(() => {
-    setManualList(manualListFakeData);
+    if (category === 'all') {
+      setManualList(shop.workManuals);
+    } else {
+      const filterHandle = async () => {
+        const WorkManualList = await shop.workManuals.filter(
+          (manual) => manual.category_id.name === category,
+        );
+
+        setManualList(WorkManualList);
+      };
+
+      filterHandle();
+    }
+
     console.log(manualList);
-  }, []);
-
-  const WorkManualList = manualList.filter(
-    (manual) => manual.category === category,
-  );
-
-  console.log(WorkManualList);
+  }, [shop, category]);
 
   return (
     <div className="manual-list">
+      {!manualList.length && shop._id && (
+        <NoDataType1 text={'등록된 업무 매뉴얼이 없습니다.'} />
+      )}
+
       {manualList && (
         <ul>
-          {WorkManualList.map((manual, index) => {
+          {manualList.map((manual, index) => {
+            console.log(manual);
             return (
               <li key={index}>
                 <div className="manual-title">
                   {manual.title}
-                  <div className="ico">
-                    <button className="btn">
-                      <AiOutlineEdit size="22" />
-                    </button>
-                    <button className="btn">
-                      <AiOutlineDelete size="22" />
-                    </button>
-                  </div>
+                  {user.role === 'owner' && (
+                    <div className="ico">
+                      <button
+                        onClick={() => EditHandle(manual)}
+                        className="btn"
+                      >
+                        <AiOutlineEdit size="22" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <br />
-                <div dangerouslySetInnerHTML={{ __html: manual.body }}></div>
+                <div dangerouslySetInnerHTML={{ __html: manual.content }}></div>
               </li>
             );
           })}
         </ul>
       )}
+      {editState && (
+        <ManualEdit editState={editState} ToggleButton={ToggleButton} />
+      )}
     </div>
   );
 };
 
-export default ManualList;
+function mapStateToProps(state) {
+  return { shop: state.shop, user: state.user };
+}
+
+export default connect(mapStateToProps)(ManualList);

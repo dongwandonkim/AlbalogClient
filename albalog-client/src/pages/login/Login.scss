@@ -1,0 +1,78 @@
+#LoginPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+
+  #login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 304px;
+    .loginLeft {
+      display: flex;
+      flex-direction: column;
+      margin: 2rem;
+
+      * {
+        height: 1.8rem;
+        width: 100%;
+        margin: 0.5rem;
+      }
+
+      input {
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        color: #333;
+        line-height: 20px;
+        border-radius: 3px;
+        background: #fff;
+        outline: none;
+        vertical-align: top;
+      }
+
+      .btn {
+        color: whitesmoke;
+        border-radius: 4px;
+        height: 44px;
+        width: 100%;
+        padding: 0;
+      }
+
+      .signIn {
+        background: #389bdc;
+      }
+
+      .signUp {
+        font-size: 12px;
+        text-align: center;
+        color: #666;
+        a {
+          text-decoration: underline;
+          color: #333;
+          font-size:14px;
+        }
+      }
+    }
+
+    .loginRight {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 2rem;
+
+      img {
+        width: 500px;
+        height: 150px;
+      }
+    }
+  }
+}

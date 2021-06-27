@@ -8,26 +8,45 @@
   right: 0;
   bottom: 0;
   z-index: 99;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.6);
+
   .modal-wrap {
     display: flex;
     flex-direction: column;
     width: 500px;
     height: 600px;
     background-color: #fff;
-    border: 2px solid #dbdbdb;
     border-radius: 4px;
     padding: 4rem;
+    overflow: auto;
+
     .invite-title {
       text-align: center;
-      margin-bottom: 4rem;
+      margin-bottom: 3rem;
     }
     form {
-      height: 100%;
+      // height: 100%;
       display: flex;
       flex-direction: column;
-      input {
+      justify-content: center;
+      label {
+        margin-bottom: 1rem;
+      }
+      input,
+      select {
         width: 100%;
+        padding: 0.75rem;
+        margin-bottom: 2rem;
+      }
+
+      .choose-time {
+        display: flex;
+        align-items: center;
+        input {
+          margin-bottom: 0;
+          border: none;
+          border-bottom: 1px solid #dbdbdb;
+        }
         margin-bottom: 2rem;
       }
 
@@ -37,11 +56,17 @@
         margin-bottom: 1rem;
         border: none;
         border-radius: 4px;
-        height: 2rem;
         font-weight: bold;
+        letter-spacing: 2px;
+        padding: 0.75rem;
+      }
+      .btn-invite {
+        background-color: #18191d;
+        color: #fff;
+        margin-top: 1rem;
       }
       .btn-close {
-        background-color: lightcoral;
+        border: 1px solid #dbdbdb;
       }
     }
   }

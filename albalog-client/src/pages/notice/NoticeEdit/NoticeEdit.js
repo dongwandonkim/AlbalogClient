@@ -3,11 +3,16 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
 import '../NoticeUpload/NoticeUpload.scss';
 import axios from 'axios';
-import ParttimeHeader from 'components/partTime/header/ParttimeHeader';
-import ParttimeAside from 'components/partTime/aside/ParttimeAside';
+import Header from 'components/Header/Header';
+import { APIURL } from 'config';
+import { connect } from 'react-redux';
+import AdminAside from '../../../components/Aside/Aside';
+import Loading from 'components/Loading/Loading';
+import { withRouter } from 'react-router';
+import Footer from 'components/Footer/Footer';
 
-const NoticeEdit = ({ match }) => {
-  const noticeId = Number(match.params.id);
+const NoticeEdit = ({ match, shop, user }) => {
+  const noticeId = match.params.id;
 
   const [noticeContent, setNoticeContent] = useState({
     title: '',
@@ -16,18 +21,29 @@ const NoticeEdit = ({ match }) => {
 
   const { title, content } = noticeContent;
 
+  const [dataState, setDataState] = useState(0);
+
   useEffect(() => {
-    axios
-      .get(`https://jsonplaceholder.typicode.com/posts/${noticeId}`)
-      .then((response) => {
-        console.log(response.data);
-        setNoticeContent({
-          ...noticeContent,
-          title: response.data.title,
-          content: response.data.body,
-        });
+    async function fetchData() {
+      const result = await axios.get(
+        `${APIURL}/location/${shop._id}/notice/${noticeId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
+      console.log('공지사항 수정' + result.data);
+      setNoticeContent({
+        ...noticeContent,
+        title: result.data.notice[0].title,
+        content: result.data.notice[0].content,
       });
-  }, []);
+      setDataState(1);
+    }
+
+    fetchData();
+  }, [shop]);
 
   const titleOnChange = (e) => {
     const nextForm = {
@@ -42,28 +58,36 @@ const NoticeEdit = ({ match }) => {
 
     let body = {
       title,
-      body: content,
+      content,
     };
     axios
-      .post('https://jsonplaceholder.typicode.com/posts', body)
+      .patch(`${APIURL}/location/${shop._id}/notice/${noticeId}/update`, body, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      })
       .then((response) => {
-        console.log('백앤드에 전송된 데이터');
-        console.log(`title : ${response.data.title}`);
-        console.log(`content: ${response.data.body}`);
+        console.log(response.data);
+        if (response.data.updatedNotice) {
+          window.location.replace(`/${shop._id}/notice/${noticeId}`); // 페이지 이동 후 새로고침
+        }
       });
   };
 
   return (
     <>
-      <ParttimeHeader />
-      <ParttimeAside />
+      <Header />
+      <AdminAside />
       <div id="NoticeEdit">
-        {title && content /** title과 content가 불러와진 후에 랜더링  */ && (
+        {dataState === 0 ? (
+          <Loading />
+        ) : (
           <div className="upload-form">
             <form action="" onSubmit={noticeOnSubmit}>
               <input
                 type="text"
                 value={title}
+                autoComplete="off"
                 onChange={titleOnChange}
                 placeholder="제목을 입력하세요"
               />
@@ -104,8 +128,13 @@ const NoticeEdit = ({ match }) => {
           </div>
         )}
       </div>
+      <Footer />
     </>
   );
 };
 
-export default NoticeEdit;
+function mapStateToProps(state) {
+  return { shop: state.shop, user: state.user };
+}
+
+export default withRouter(connect(mapStateToProps)(NoticeEdit));

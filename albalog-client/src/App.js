@@ -1,11 +1,7 @@
-import AdminAside from 'components/admin/AdminAside/AdminAside';
-import AdminHeader from 'components/admin/AdminHeader/AdminHeader';
-import AdminInfo from 'components/admin/AdminInfo/AdminInfo';
 import AdminDashboardPage from 'pages/admin/AdminDashboardPage';
 import AdminEmployeePage from 'pages/admin/AdminEmployeePage';
 import AdminInfoPage from 'pages/admin/AdminInfoPage';
 import AdminPayrollPage from 'pages/admin/AdminPayrollPage';
-// import AdminSchedulePage from 'pages/admin/AdminSchedulePage';
 import NoticeList from 'pages/notice/NoticeList/NoticeList';
 import NoticeDetail from 'pages/notice/NoticeDetail/NoticeDetail';
 import { Route, Switch } from 'react-router-dom';
@@ -15,83 +11,114 @@ import WorkManual from 'pages/workManual/WorkManual';
 import Transition from 'pages/transition/Transition';
 import Landing from 'pages/landing/Landing';
 import PartTimeDashboard from 'pages/partTime/PartTimeDashboard';
-import Login from 'components/Login';
-import SignUp from 'components/SignUp';
+import Login from 'pages/login/Login';
+import SignUp from 'pages/signUp/SignUp';
 import AccountInfo from 'pages/partTime/AccountInfo';
 import WorkingTime from 'pages/partTime/WorkingTime';
-import ParttimeHeader from 'components/partTime/header/ParttimeHeader';
-import ParttimeAside from 'components/partTime/aside/ParttimeAside';
 import React from 'react';
-import ParttimeScheduler from 'pages/partTime/ParttimeScheduler';
+import Authentication from 'utils/authentication';
+import ParttimeScheduler from 'pages/partTime/schedule/ParttimeScheduler';
+import EmployeeSignUp from 'pages/employeeSignUp/EmployeeSignUp';
+import MobileCategory from 'pages/mobileCategory/MobileCategory';
+import AdminSchedulePage from 'pages/admin/AdminSchedulePage';
 
 const App = () => {
+  // Authentication(a, b, c)
+  // a : 컴포넌트
+  // b : true-> 로그인한 유저만 접근가능 false-> 로그인한 유저는 출입이 불가능 null -> 아무나 출입이 가능
+  // c : null -> 아무나 접근가능 'admin' -> 관리자만 접근 가능 'staff' -> 직원만 접근가능
   return (
     <div id="container">
       <div id="main">
         <Switch>
-          <Route path="/" exact component={Landing}></Route>
-          <Route path="/notice" exact>
-            <ParttimeHeader />
-            <ParttimeAside />
-            <NoticeList />
-          </Route>
-          <Route path="/notice/upload" exact>
-            <ParttimeHeader />
-            <ParttimeAside />
-            <NoticeUpload />
-          </Route>
-          <Route path="/notice/:id?" exact component={NoticeDetail}></Route>
-          <Route path="/notice/edit/:id?" exact component={NoticeEdit}></Route>
-          <Route path="/workmanual/:category?" component={WorkManual} />
+          <Route path="/" exact component={Authentication(Landing, true)} />
+          <Route path="/login" component={Authentication(Login, false)} exact />
+          <Route
+            path="/signup"
+            component={Authentication(SignUp, false)}
+            exact
+          />
+          <Route
+            path="/:shop/mobile/category"
+            exact
+            component={Authentication(MobileCategory, true)}
+          />
+          <Route
+            path="/:shop?/notice"
+            exact
+            component={Authentication(NoticeList, true)}
+          />
+          <Route
+            path="/:shop?/notice/edit/:id?"
+            component={Authentication(NoticeEdit, true, 'admin')}
+          />
+          <Route
+            path="/:shop?/notice/upload"
+            component={Authentication(NoticeUpload, true, 'admin')}
+          />
+          <Route
+            path="/:shop?/notice/:id?"
+            component={Authentication(NoticeDetail, true)}
+          />
+          <Route
+            path="/:shop?/workmanual/:category?"
+            component={Authentication(WorkManual, true)}
+          />
+          <Route
+            path="/:shop?/transition"
+            exact
+            component={Authentication(Transition, true)}
+          />
+          <Route
+            path="/admin/:shop?"
+            exact
+            component={Authentication(AdminDashboardPage, true, 'admin')}
+          />
+          <Route
+            path="/admin/:shop?/schedule"
+            exact
+            component={Authentication(AdminSchedulePage, true, true)}
+          />
+          <Route
+            path="/admin/:shop?/info"
+            component={Authentication(AdminInfoPage, true, 'admin')}
+          />
+          <Route
+            path="/admin/:shop?/payroll"
+            component={Authentication(AdminPayrollPage, true, 'admin')}
+          />
+          <Route
+            path="/admin/:shop?/employeelist"
+            component={Authentication(AdminEmployeePage, true, 'admin')}
+          />
 
-          <Route path="/transition" exact>
-            <ParttimeHeader />
-            <ParttimeAside />
-            <Transition />
-          </Route>
-          <Route path="/admin" exact>
-            <AdminHeader />
-            <AdminAside />
-            <AdminDashboardPage />
-          </Route>
-          <Route path="/admin/info">
-            <AdminHeader />
-            <AdminAside />
-            <AdminInfoPage />
-          </Route>
-          <Route path="/admin/payroll">
-            <AdminHeader />
-            <AdminAside />
-            <AdminPayrollPage />
-          </Route>
-          <Route path="/admin/employeelist">
-            <AdminHeader />
-            <AdminAside />
-            <AdminEmployeePage />
-          </Route>
-          {/* <Route path="/admin/schedule" component={AdminSchedulePage} /> */}
-          <Route path="/login" component={Login} exact></Route>
-          <Route path="/signup" component={SignUp} exact></Route>
-          <Route path="/parttime" exact>
-            <ParttimeHeader />
-            <ParttimeAside />
-            <PartTimeDashboard />
-          </Route>
-          <Route path="/parttime/accountinfo" exact>
-            <ParttimeHeader />
-            <ParttimeAside />
-            <AccountInfo />
-          </Route>
-          <Route path="/parttime/workingtime" exact>
-            <ParttimeHeader />
-            <ParttimeAside />
-            <WorkingTime />
-          </Route>
-          <Route path="/parttime/scheduler" exact>
-            <ParttimeHeader />
-            <ParttimeAside />
-            <ParttimeScheduler />
-          </Route>
+          {/** 나중에 staff로 바꿔야함 */}
+
+          <Route
+            path="/parttime/:shop?"
+            exact
+            component={Authentication(PartTimeDashboard, true, 'staff')}
+          />
+          <Route
+            path="/parttime/:shop?/accountinfo"
+            exact
+            component={Authentication(AccountInfo, true, 'staff')}
+          />
+          <Route
+            path="/parttime/:shop?/scheduler"
+            exact
+            component={Authentication(ParttimeScheduler, true, 'staff')}
+          />
+          <Route
+            path="/parttime/:shop?/workingtime"
+            exact
+            component={Authentication(WorkingTime, true, 'staff')}
+          />
+          <Route
+            path="/parttime/:shop/:invitetoken/signup"
+            exact
+            component={Authentication(EmployeeSignUp, false)}
+          />
         </Switch>
       </div>
     </div>
