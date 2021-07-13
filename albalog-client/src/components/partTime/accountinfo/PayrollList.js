@@ -34,7 +34,7 @@ function Monthlypay({ data }) {
         </div>
         <div className="time"></div>
         <div className="pay">
-          {monthWage.toLocaleString()}
+          {monthWage > 100 ? monthWage.toLocaleString() : 0}
           <button onClick={() => handleClick()}>
             <IoIosArrowDown
               className={isActive ? 'active' : ''}
@@ -48,14 +48,14 @@ function Monthlypay({ data }) {
       <div className={isActive ? 'detail active' : 'detail'}>
         {timeClock.map((item, i) => (
           <div className="tr" key={i}>
-            <div className="date">
-              <div className="date">{item.start_time.slice(5)}</div>
-            </div>
+            <div className="date">{item.start_time.slice(5)}</div>
             <div className="time">
               {item.workTime.slice(0, 2)}:{item.workTime.slice(2, -2)}:
               {item.workTime.slice(-2)}
             </div>
-            <div className="pay">{item.total.toLocaleString()}</div>
+            <div className="pay">
+              {item.total > 0 ? item.total.toLocaleString() : 0}
+            </div>
           </div>
         ))}
       </div>

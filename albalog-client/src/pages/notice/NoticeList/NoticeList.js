@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import './NoticeList.scss';
 import { AiOutlineSearch } from 'react-icons/ai';
 import Pagination from 'components/Pagination/Pagination';
 import { paginate } from 'utils/paginate';
-import { connect, useDispatch, useSelector } from 'react-redux';
-import { APIURL } from 'config';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import Header from 'components/Header/Header';
-import AdminAside from 'components/Aside/Aside';
+import Header from 'components/Header';
+import Aside from 'components/Aside';
 import Footer from 'components/Footer/Footer';
 import NoDataType2 from 'components/NoData/NodataType2';
 import client from 'utils/api';
 
 const NoticeList = ({ user, shop }) => {
-  const dispatch = useDispatch();
-
   const [getNotices, setGetNotices] = useState([]);
   const [searchNoticeInput, setSearchNoticeInput] = useState('');
   const [noticeInfo, setNoticeInfo] = useState({
@@ -27,6 +23,7 @@ const NoticeList = ({ user, shop }) => {
 
   // utils 함수에 있는 paginate로 화면에 보여줘야할 컨텐츠 개수의 배열을 가져옴
   const pagedNotices = paginate(getNotices, currentPage, pageSize);
+
   useEffect(() => {
     setGetNotices(shop.notices);
   }, [user, shop]);
@@ -56,7 +53,6 @@ const NoticeList = ({ user, shop }) => {
       content: searchNoticeInput,
     };
     client.post('/location/notice/search', body).then((response) => {
-      console.log(response);
       setGetNotices(response.data);
     });
   };
@@ -64,7 +60,7 @@ const NoticeList = ({ user, shop }) => {
   return (
     <>
       <Header />
-      <AdminAside />
+      <Aside />
       <div id="Notice" className="page-layout">
         <div className="cont">
           <div className="search-comm">
@@ -97,36 +93,43 @@ const NoticeList = ({ user, shop }) => {
               </colgroup>
               <thead>
                 <tr>
-                  <th scope="col">내용</th>
+                  <th scope="col">제목</th>
                   <th scope="col">등록일</th>
                 </tr>
               </thead>
-              {!pagedNotices.length && shop._id && (
-                <NoDataType2 text={'등록된 공지사항이 없습니다.'} />
-              )}
 
               <tbody>
-                {pagedNotices.map((notice, index) => (
-                  <tr key={index}>
-                    <td className="td-left">
-                      <div className="inner-cont">
-                        <span className="inner-text">
-                          <Link
-                            to={`/${shop._id}/notice/${notice._id}`}
-                            className="link-text"
-                          >
-                            {notice.title}
-                          </Link>
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="inner-cont inner-date">
-                        {notice.createdAt.slice(0, 10)}
-                      </div>
+                {shop._id && pagedNotices.length === 0 ? (
+                  <tr>
+                    <td style={{ borderBottom: 'none' }}>
+                      <NoDataType2 text={'등록된 공지사항이 없습니다.'} />
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  <>
+                    {pagedNotices.map((notice, index) => (
+                      <tr key={index}>
+                        <td className="td-left">
+                          <div className="inner-cont">
+                            <span className="inner-text">
+                              <Link
+                                to={`/${shop._id}/notice/${notice._id}`}
+                                className="link-text"
+                              >
+                                {notice.title}
+                              </Link>
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="inner-cont inner-date">
+                            {notice.createdAt.slice(0, 10)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                )}
               </tbody>
             </table>
           </div>

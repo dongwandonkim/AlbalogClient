@@ -1,18 +1,17 @@
-import RescheduleModal from 'components/Modal/RescheduleModal';
+// import RescheduleModal from 'components/Modal/RescheduleModal';
 import Aside from 'components/Aside/Aside';
 import Header from 'components/Header/Header';
 import DashboardAccount from 'components/partTime/dashboard/DashboardAccount';
 import DashboardFullschedule from 'components/partTime/dashboard/DashboardFullschedule';
 import DashboardNotice from 'components/partTime/dashboard/DashboardNotice';
 import DashboardPersonalschedule from 'components/partTime/dashboard/DashboardPersonalschedule';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { IoIosArrowForward } from 'react-icons/io';
 import './PartTimeDashboard.scss';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import client from 'utils/api';
 import Footer from 'components/Footer/Footer';
-import { SetParttime } from 'modules/parttime';
 import Loading from 'components/Loading/Loading';
 
 function PartTimeDashboard() {
@@ -23,49 +22,20 @@ function PartTimeDashboard() {
   const shop = useSelector((state) => state.shop);
   const user = useSelector((state) => state.user);
   const parttime = useSelector((state) => state.parttime);
-  const dispatch = useDispatch();
-
-  // payroll redux에 추가
-  const getPayroll = async () => {
-
-    try {
-      let response = await client.get(`/timeclock/${shop._id}/staff`);
-      if (response.status === 200) {
-        const newParttime = {
-          ...parttime,
-          payrolls: response.data,
-        };
-        console.log(newParttime);
-        sessionStorage.setItem('parttime', JSON.stringify(newParttime));
-        dispatch(SetParttime(newParttime));
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getPayroll();
-  }, [shop]);
 
   const weekArray = ['일', '월', '화', '수', '목', '금', '토'];
   const day = weekArray[new Date().getDay()];
 
   // 출퇴근 기능
-  let clockOut = false;
+  const lastTimeClock =
+    parttime.timeClocks && parttime.timeClocks[parttime.timeClocks.length - 1];
 
-  const todaytimeclockIn =
-    parttime.timeClocks &&
-    parttime.timeClocks.find(
-      (a) => new Date(a.start_time).toDateString() == new Date().toDateString(),
-    );
-
-  const todaytimeclockOut =
-    parttime.timeClocks &&
-    parttime.timeClocks.find(
-      (a) => new Date(a.end_time).toDateString() === new Date().toDateString(),
-    );
+  let clockIn = lastTimeClock
+    ? !!lastTimeClock.end_time
+      ? false
+      : true // true면 값을 클릭 불가능
+    : false; // false면 값을 클릭 가능
+  let clockOut = clockIn ? false : true;
 
   const getprofile = () => {
     try {
@@ -86,13 +56,11 @@ function PartTimeDashboard() {
 
     const pushdata = async () => {
       try {
-        let response = await client
-          .post(`/timeclock/start`, newForm)
-          .then((response) => {
-            if (response.status === 201) {
-              getprofile();
-            }
-          });
+        await client.post(`/timeclock/start`, newForm).then((response) => {
+          if (response.status === 201) {
+            getprofile();
+          }
+        });
       } catch (e) {
         console.log(e);
       }
@@ -101,22 +69,17 @@ function PartTimeDashboard() {
   };
 
   const clickClockOut = (e) => {
-    if (!clockOut) {
-      clockOut = true;
-    }
+    clockOut = true;
+    clockIn = false;
     const newForm = {
       locationId: shop._id,
-      timeClockId: todaytimeclockIn._id,
+      timeClockId: lastTimeClock._id,
     };
     const pushdata = async () => {
       try {
-        let response = await client
+        await client
           .post(`/timeclock/end`, newForm)
-          .then((response) => {
-            if (response.status === 201) {
-              getprofile();
-            }
-          });
+          .then((response) => getprofile());
       } catch (e) {
         console.log(e);
       }
@@ -125,10 +88,10 @@ function PartTimeDashboard() {
   };
   // 출퇴근 끝
 
-  const [Modal, setModal] = useState(false);
-  const handleModal = () => {
-    setModal(!Modal);
-  };
+  // const [Modal, setModal] = useState(false);
+  // const handleModal = () => {
+  //   setModal(!Modal);
+  // };
 
   return (
     <>
@@ -194,9 +157,9 @@ function PartTimeDashboard() {
                 <button
                   className="clockInBtn"
                   onClick={clickClockIn}
-                  disabled={todaytimeclockIn ? true : false}
+                  disabled={clockIn}
                   style={
-                    todaytimeclockIn
+                    clockIn
                       ? {
                           background: '#ededee',
                           color: 'gray',
@@ -205,31 +168,23 @@ function PartTimeDashboard() {
                       : { background: 'rgb(18, 113, 175)' }
                   }
                 >
-                  {todaytimeclockIn ? '출근 완료' : '출근 하기'}
+                  {clockIn ? '출근 완료' : '출근 하기'}
                 </button>
                 <button
                   className="clockOutBtn"
                   onClick={clickClockOut}
-                  disabled={
-                    todaytimeclockOut ? true : todaytimeclockIn ? false : true
-                  }
+                  disabled={clockOut}
                   style={
-                    todaytimeclockOut
+                    clockOut
                       ? {
                           background: '#ededee',
                           color: 'gray',
                           cursor: 'default',
                         }
-                      : todaytimeclockIn
-                      ? { background: 'rgb(18, 113, 175)' }
-                      : {
-                          background: '#ededee',
-                          color: 'gray',
-                          cursor: 'default',
-                        }
+                      : { background: 'rgb(18, 113, 175)' }
                   }
                 >
-                  {todaytimeclockOut ? '퇴근 완료' : '퇴근 하기'}
+                  {clockOut ? '퇴근 완료' : '퇴근 하기'}
                 </button>
               </div>
             </div>

@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { ChangeField } from 'modules/auth';
 import { SetUser } from 'modules/user';
 import React, { useEffect } from 'react';
-import { connect, useDispatch } from 'react-redux';
+import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import './Login.scss';
 import banner from 'static/banner.png';
@@ -42,10 +42,9 @@ function Login({
     axios
       .post(`${APIURL}/login`, loginBody)
       .then((response) => {
-        console.log(response);
         const token = response.data.token;
         const decoded = jwt.verify(token, TOKENKEY);
-        console.log(decoded);
+        console.log(response);
 
         let userBody = {
           _id: response.data.user._id,

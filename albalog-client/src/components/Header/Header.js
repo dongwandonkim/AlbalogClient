@@ -2,6 +2,7 @@ import Loading from 'components/Loading/Loading';
 import InviteModal from 'components/Modal/InviteModal';
 import { SetShop } from 'modules/shop';
 import { SetUser } from 'modules/user';
+import { SetParttime } from 'modules/parttime';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
@@ -12,7 +13,15 @@ import { FaStoreAlt } from 'react-icons/fa';
 import { BsFillPersonPlusFill } from 'react-icons/bs';
 import { AiOutlineExport } from 'react-icons/ai';
 
-const Header = ({ user, shop, dispatchSetUser, dispatchSetShop, match }) => {
+const Header = ({
+  user,
+  shop,
+  parttime,
+  dispatchSetParttime,
+  dispatchSetUser,
+  dispatchSetShop,
+  match,
+}) => {
   const [isModal, setIsModal] = useState(false);
   console.log('Header 리렌더링');
 
@@ -59,41 +68,75 @@ const Header = ({ user, shop, dispatchSetUser, dispatchSetShop, match }) => {
   };
 
   useEffect(() => {
-    const shopId = match.params.shop;
+    if (!shop._id) {
+      const shopId = match.params.shop;
+      if (user.role === 'owner') {
+        client.get(`/location/${shopId}`).then((response) => {
+          console.log(response.data);
+          let shopBody = response.data;
 
-    if (user.role === 'owner') {
-      client.get(`/location/${shopId}`).then((response) => {
-        console.log(response.data);
-        let shopBody = response.data;
+          dispatchSetShop(shopBody);
+        });
+      } else if (user.role === 'staff') {
+        client.get(`/employee/${shopId}`).then((response) => {
+          console.log(response.data);
 
-        dispatchSetShop(shopBody);
-      });
-    } else if (user.role === 'staff') {
-      client.get(`/employee/${shopId}`).then((response) => {
-        console.log(response.data);
+          let shopBody = {
+            _id: response.data._id,
+            name: response.data.name,
+            notices: [...response.data.notices].reverse(),
+            workManuals: response.data.workManuals,
+            address: response.data.address,
+            phone_number: response.data.phone_number,
+            postal_code: response.data.postal_code,
+            employees: response.data.employees,
+          };
 
-        let shopBody = {
-          _id: response.data._id,
-          name: response.data.name,
-          notices: [...response.data.notices].reverse(),
-          workManuals: response.data.workManuals,
-          address: response.data.address,
-          phone_number: response.data.phone_number,
-          postal_code: response.data.postal_code,
-          employees: response.data.employees,
-        };
-
-        dispatchSetShop(shopBody);
-      });
+          dispatchSetShop(shopBody);
+        });
+      }
     }
 
-    if (user.email) {
-      console.log('유저가 있습니다');
-    } else {
-      console.log('유저가 없습니다');
+    if (!user.email) {
       window.location.replace('/login');
     }
-  }, [user]);
+  }, [user, dispatchSetShop, match.params.shop, shop._id]);
+
+  // payroll과 개인스케줄을 리덕스에 추가
+  useEffect(() => {
+    const getPayroll = async () => {
+      try {
+        const responseP = await client.get(`/timeclock/${shop._id}/staff`);
+        const responseOneSht = await client.get(`/shift/employee/${user._id}`);
+
+        let shift = await responseOneSht.data.map((a) => {
+          const st = new Date(new Date(a.start).getTime() - 540 * 60 * 1000);
+          const ed = new Date(new Date(a.end).getTime() - 540 * 60 * 1000);
+
+          let newData = {
+            title: user.name,
+            start: new Date(st),
+            end: new Date(ed),
+          };
+          return newData;
+        });
+        const shiftParttime = {
+          ...parttime,
+          payrolls: responseP.data,
+          one_shift: shift,
+        };
+        console.log(shiftParttime);
+        sessionStorage.setItem('parttime', JSON.stringify(shiftParttime));
+        dispatchSetParttime(shiftParttime);
+      } catch (error) {
+        console.log('payroll', error);
+      }
+    };
+
+    if (!parttime.payrolls && shop._id && user.role === 'staff') {
+      getPayroll();
+    }
+  }, [shop._id, dispatchSetParttime, user._id, parttime, user.name, user.role]);
 
   return (
     <>
@@ -132,16 +175,17 @@ const Header = ({ user, shop, dispatchSetUser, dispatchSetShop, match }) => {
 };
 
 function mapStateToProps(state) {
-  // redux state로 부터 state를 component의 props로 전달해줌
-  // store의 값이 여기 함수 state로 들어옴
-  return { user: state.user, shop: state.shop };
+  return { user: state.user, shop: state.shop, parttime: state.parttime };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     dispatchSetUser: (UserBody) => dispatch(SetUser(UserBody)),
     dispatchSetShop: (ShopBody) => dispatch(SetShop(ShopBody)),
+    dispatchSetParttime: (ParttimeBody) => dispatch(SetParttime(ParttimeBody)),
   };
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Header));
+export default React.memo(
+  withRouter(connect(mapStateToProps, mapDispatchToProps)(Header)),
+);
