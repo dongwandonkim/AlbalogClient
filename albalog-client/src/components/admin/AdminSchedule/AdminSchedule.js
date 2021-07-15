@@ -12,7 +12,7 @@ import DeleteAllScheduleModal from 'components/Modal/DeleteAllScheduleModal';
 import ScheduleInfoModal from 'components/Modal/ScheduleInfoModal';
 
 const localizer = momentLocalizer(moment);
-console.log(localizer)
+console.log(localizer);
 
 const AdminSchedule = () => {
   const employeeList = useSelector(({ shop }) => shop.employees);
@@ -40,14 +40,6 @@ const AdminSchedule = () => {
   const getAllSchedule = async () => {
     try {
       const response = await client.get(`/shift/location/${locationId}`);
-<<<<<<< HEAD
-      // setEvents(response.data);
-      const newEvents = response.data.map((d) => {
-        const ddd = {
-          title: d.title,
-          start: new Date(new Date(d.start).getTime() - 540 * 60 * 1000),
-          end: new Date(new Date(d.end).getTime() - 540 * 60 * 1000),
-=======
       const newEvents = response.data.map((employee) => {
         const schedule = {
           title: employee.title,
@@ -55,7 +47,6 @@ const AdminSchedule = () => {
           end: new Date(new Date(employee.end).getTime() - 540 * 60 * 1000),
           index: employee._id,
           staffId: employee.staffId,
->>>>>>> a876491c3c5c40749a3e9ec38ec226cadf6445f8
         };
         return schedule;
       });
