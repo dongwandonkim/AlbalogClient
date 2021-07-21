@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import client from 'utils/api';
+import { deleteAllSchedule } from 'utils/api/schedule';
 import './DeleteAllScheduleModal.scss';
 
 const DeleteAllScheduleModal = ({
@@ -12,22 +12,20 @@ const DeleteAllScheduleModal = ({
   const handleChangeId = (e) => {
     setId(e.target.value);
   };
-  console.log(employeeList);
 
   const handleDeleteScheduleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await client.delete(
-        `/shift/location/${locationId}/employee/${id}/deleteAll`,
-      );
-      handleDeleteModal();
-      if (response.status === 200) {
-        window.location.replace(`/admin/${locationId}/schedule`); // 페이지 이동 후 새로고침
+    const isConfirm = window.confirm('정말 삭제하시겠습니까?');
+
+    if (isConfirm) {
+      try {
+        await deleteAllSchedule({ locationId, id });
+        handleDeleteModal();
+      } catch (e) {
+        console.error(e);
+        alert('다시 시도해 주세요');
       }
-    } catch (e) {
-      console.error(e);
-      alert('다시 시도해 주세요');
     }
   };
 

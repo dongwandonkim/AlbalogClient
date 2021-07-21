@@ -8,9 +8,9 @@ function ContentLine({ filteredPayroll }) {
     <div id="contentline-container">
       {/* {console.log(filteredPayroll[0].timeClock)} */}
       {filteredPayroll() ? (
-        filteredPayroll().map((a) => {
+        filteredPayroll().map((a, i) => {
           return (
-            <div className="content-line">
+            <div className="content-line" key={i}>
               <div className="date-column">{a.start_time}</div>
               <div className="day-column">
                 {
@@ -24,10 +24,14 @@ function ContentLine({ filteredPayroll }) {
                 }
               </div>
               <div className="clockIn-column">
-                {a.workTime.slice(0, 2)}:{a.workTime.slice(2, 4)}
+                {new Date(new Date(a.workTime[0]).getTime())
+                  .toString()
+                  .slice(15, 21)}
               </div>
               <div className="clockOut-column">
-                {a.workTime.slice(5, 7)}:{a.workTime.slice(7)}
+                {new Date(new Date(a.workTime[1]).getTime())
+                  .toString()
+                  .slice(15, 21)}
               </div>
               <div className="workingtime-column">
                 {parseInt(a.workInToday / 60)}시간 {a.workInToday % 60}분

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import 'pages/partTime/schedule/ParttimeScheduler.scss';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import format from 'date-fns/format';
@@ -9,57 +9,59 @@ import Header from '../../../components/Header/Header';
 import Aside from 'components/Aside/Aside';
 import Footer from 'components/Footer/Footer';
 import { useSelector } from 'react-redux';
-import client from 'utils/api';
 import Loading from 'components/Loading/Loading';
 
-const locales = {
-  ko: require('date-fns/locale/ko'),
-};
-const localizer = dateFnsLocalizer({
-  format, //to format dates
-  parse, // to parse dates
-  startOfWeek, // the day value for the start of the week for a given locale
-  getDay, // to get the day from a date
-  locales, // arrayof locales
-});
-
-const today = new Date();
-const year = today.getFullYear();
-const month = today.getMonth();
-const date = today.getDate();
-
 function ParttimeScheduler() {
-  const user = useSelector((state) => state.user);
-  const shop = useSelector((state) => state.shop);
   const parttime = useSelector((state) => state.parttime);
-  const [personalShifts, setPersonalShifts] = useState(
-    parttime.one_shift || [],
-  );
-  const [allShifts, setAllShifts] = useState([]);
+  const allShift = useSelector((state) => state.allShift);
+  const [personalShifts] = useState(parttime.one_shift || []);
+  const [allShifts] = useState(allShift.allShift || []);
   const [selectedRadio, setSelectedRadio] = useState('all');
+  const [colorAssigned] = useState({});
+  const locales = {
+    ko: require('date-fns/locale/ko'),
+  };
+  const localizer = dateFnsLocalizer({
+    format, //to format dates
+    parse, // to parse dates
+    startOfWeek, // the day value for the start of the week for a given locale
+    getDay, // to get the day from a date
+    locales, // arrayof locales
+  });
 
-  const getAllSchedule = useCallback(async () => {
-    try {
-      const response = await client.get(`/shift/location/${shop._id}`);
-      console.log(response);
-      let shift = await response.data.map((a) => {
-        const st = new Date(new Date(a.start).getTime() - 540 * 60 * 1000);
-        const ed = new Date(new Date(a.end).getTime() - 540 * 60 * 1000); //540 * 60 * 1000
-        let newData = {
-          title: a.title,
-          start: new Date(st),
-          end: new Date(ed),
-        };
-        return newData;
-      });
-      setAllShifts(shift);
-    } catch (error) {}
-  }, [shop._id]);
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const date = today.getDate();
 
-  useEffect(() => {
-    // getPersonalSchedule();
-    getAllSchedule();
-  }, [shop, getAllSchedule]);
+  // event 슬롯 색 정하기
+  const eventStyleGetter = (event) => {
+    const title = event.title;
+
+    if (!Object.keys(colorAssigned).includes(title)) {
+      const getRandomColor = () => {
+        let letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      };
+      colorAssigned[title] = getRandomColor();
+    }
+
+    let style = {
+      backgroundColor: colorAssigned[title],
+      borderRadius: '5px',
+      opacity: 0.9,
+      color: 'white',
+      border: '0px',
+      display: 'block',
+    };
+    return {
+      style: style,
+    };
+  };
 
   const onChange = (e) => {
     e.target.value === 'personal' && setSelectedRadio('personal');
@@ -93,7 +95,6 @@ function ParttimeScheduler() {
                   name="grade"
                   value="all"
                   checked={selectedRadio === 'all' ? true : false}
-                  defaultChecked
                   onChange={onChange}
                   className="content-label"
                 />
@@ -114,6 +115,7 @@ function ParttimeScheduler() {
                   startAccessor="start" // the property for the start date of events
                   endAccessor="end" // the property for the end date of events
                   step={30}
+                  eventPropGetter={eventStyleGetter}
                   onSelectEvent={(event, e) => {
                     console.log(event);
                   }}
@@ -131,6 +133,7 @@ function ParttimeScheduler() {
                   startAccessor="start" // the property for the start date of events
                   endAccessor="end" // the property for the end date of events
                   step={30}
+                  eventPropGetter={eventStyleGetter}
                   onSelectEvent={(event, e) => {
                     console.log(event);
                   }}

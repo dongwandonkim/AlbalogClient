@@ -21,7 +21,7 @@ function WorkingTime() {
           (a.yearAndMonth.toString().slice(0, 4) * 1 === today.getFullYear()) &
           (a.yearAndMonth.toString().slice(4) * 1 === today.getMonth() + 1),
       );
-    return !!monthlyPayroll[0] ? monthlyPayroll[0].timeClock : 0;
+    return !!payrolls ? monthlyPayroll[0].timeClock : 0;
   }
 
   const totalWorkingtime = filteredPayroll()
@@ -65,7 +65,9 @@ function WorkingTime() {
               <div className="clockOut-column">퇴근시간</div>
               <div className="workingtime-column">근무시간</div>
             </div>
-            <ContentLine filteredPayroll={filteredPayroll} />
+            <div className="context-lines">
+              <ContentLine filteredPayroll={filteredPayroll} />
+            </div>
             <div className="total-line">
               <div className="date-column"></div>
               <div className="day-column"></div>

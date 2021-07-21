@@ -1,37 +1,66 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import 'components/partTime/dashboard/DashboardFullschedule.scss';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
+import { useSelector } from 'react-redux';
+import Moment from 'moment';
+import { extendMoment } from 'moment-range';
 
-function DashboardFullschedule({ year, month, date, day }) {
+const moment = extendMoment(Moment);
+
+function DashboardFullschedule({ year, month, date }) {
+  const allShifts = useSelector((state) => state.allShift.allShift);
+  const [today, setToday] = useState(new Date(year, month - 1, date));
+  const [filteredShift, setFilteredShift] = useState([]);
+  const onClickLeft = () => {
+    setToday(new Date(today.setDate(today.getDate() - 1)));
+  };
+  const onClickRight = () => {
+    setToday(new Date(today.setDate(today.getDate() + 1)));
+  };
+
+  // 날짜별 shift 필터
+  useEffect(() => {
+    if (!allShifts) {
+      return;
+    }
+    let filteredShift = allShifts.filter(
+      (a) => a.start.toString().slice(0, 15) === today.toString().slice(0, 15),
+    );
+    setFilteredShift(filteredShift);
+  }, [allShifts, today]);
+
   return (
     <div id="fullschedule-content">
       <div className="txtline">
-        <IoIosArrowBack style={{ cursor: 'pointer' }} />
-        {year}년 {month}월 {date}일 {day}요일
-        <IoIosArrowForward style={{ cursor: 'pointer' }} />
+        <IoIosArrowBack onClick={onClickLeft} />
+        {today
+          .toLocaleDateString('ko-KR')
+          .toString()
+          .replace('.', '-')
+          .replace('.', '-')
+          .replace('.', '')}
+        <IoIosArrowForward onClick={onClickRight} />
       </div>
       <div className="full-table">
-        <div className="tr">
-          <div className="shift">
-            <p>오픈 </p>
-            <p>08:00 - 12:00</p>
-          </div>
-          <p>이도현, 김태희</p>
-        </div>
-        <div className="tr">
-          <div className="shift">
-            <p>미들 </p>
-            <p>14:00 - 18:00</p>
-          </div>
-          <p>김태희, 서우리</p>
-        </div>
-        <div className="tr">
-          <div className="shift">
-            <p>마감</p>
-            <p>18:00 - 22:00</p>
-          </div>
-          <p>윤영훈, 김동완</p>
-        </div>
+        {filteredShift.length > 0 ? (
+          filteredShift
+            .sort((a, b) => a.start - b.start)
+            .map((a, i) => {
+              return (
+                <div className="tr" key={i}>
+                  <div className="worker">
+                    <p key={i}>{a.title}</p>
+                  </div>
+                  <div className="working-time">
+                    <p>{a.start.toString().slice(15, 21)}</p>~
+                    <p>{a.end.toString().slice(15, 21)}</p>
+                  </div>
+                </div>
+              );
+            })
+        ) : (
+          <p>-</p>
+        )}
       </div>
     </div>
   );

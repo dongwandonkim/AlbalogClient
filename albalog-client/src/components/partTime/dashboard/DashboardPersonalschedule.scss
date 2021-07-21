@@ -4,7 +4,7 @@
 
   .txtline {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     height: 1.2rem;
 
@@ -19,7 +19,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-evenly;
     padding: 10px 0;
 
     .tr {

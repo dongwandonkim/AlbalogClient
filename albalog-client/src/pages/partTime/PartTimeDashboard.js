@@ -5,14 +5,16 @@ import DashboardAccount from 'components/partTime/dashboard/DashboardAccount';
 import DashboardFullschedule from 'components/partTime/dashboard/DashboardFullschedule';
 import DashboardNotice from 'components/partTime/dashboard/DashboardNotice';
 import DashboardPersonalschedule from 'components/partTime/dashboard/DashboardPersonalschedule';
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IoIosArrowForward } from 'react-icons/io';
 import './PartTimeDashboard.scss';
 import { useSelector } from 'react-redux';
-import client from 'utils/api';
+import client from 'utils/api/client';
 import Footer from 'components/Footer/Footer';
 import Loading from 'components/Loading/Loading';
+import { useCallback } from 'react';
+import TimeclockModal from 'components/Modal/TimeclockModal';
 
 function PartTimeDashboard() {
   const year = new Date().getFullYear();
@@ -86,12 +88,17 @@ function PartTimeDashboard() {
     };
     pushdata();
   };
-  // 출퇴근 끝
 
-  // const [Modal, setModal] = useState(false);
-  // const handleModal = () => {
-  //   setModal(!Modal);
-  // };
+  // 출퇴근 확인 모달 창
+  const [timeclockInModal, setTimeclockInModal] = useState(false);
+  const [timeclockOutModal, setTimeclockOutModal] = useState(false);
+
+  const timeClockInModalToggle = useCallback(() => {
+    setTimeclockInModal(!timeclockInModal);
+  }, [timeclockInModal]);
+  const timeClockOutModalToggle = useCallback(() => {
+    setTimeclockOutModal(!timeclockOutModal);
+  }, [timeclockOutModal]);
 
   return (
     <>
@@ -114,24 +121,28 @@ function PartTimeDashboard() {
                 <div className="fullSchedule">
                   <div className="textLine">
                     <span>전체 스케줄</span>
-                    <span className="moreBtn">
-                      더보기
-                      <IoIosArrowForward />
-                    </span>
+                    <Link to={`/parttime/${shop._id}/scheduler`} option={'all'}>
+                      <span className="moreBtn">
+                        더보기
+                        <IoIosArrowForward />
+                      </span>
+                    </Link>
                   </div>
                   <div className="fullScheduleContent">
                     <DashboardFullschedule
                       year={year}
                       month={month}
                       date={date}
-                      day={day}
                     />
                   </div>
                 </div>
                 <div className="personalSchedule">
                   <div className="textLine">
                     <span>개인 스케줄</span>
-                    <Link to={`/parttime/${shop._id}/scheduler`}>
+                    <Link
+                      to={`/parttime/${shop._id}/scheduler`}
+                      option={'personal'}
+                    >
                       <span className="moreBtn">
                         더보기
                         <IoIosArrowForward />
@@ -143,10 +154,8 @@ function PartTimeDashboard() {
                       year={year}
                       month={month}
                       date={date}
-                      day={day}
                     />
                   </div>
-                  <button className="">스케줄 변경 신청</button>
                 </div>
               </div>
             </div>
@@ -156,7 +165,7 @@ function PartTimeDashboard() {
               <div className="btnBox">
                 <button
                   className="clockInBtn"
-                  onClick={clickClockIn}
+                  onClick={timeClockInModalToggle}
                   disabled={clockIn}
                   style={
                     clockIn
@@ -172,7 +181,7 @@ function PartTimeDashboard() {
                 </button>
                 <button
                   className="clockOutBtn"
-                  onClick={clickClockOut}
+                  onClick={timeClockOutModalToggle}
                   disabled={clockOut}
                   style={
                     clockOut
@@ -203,6 +212,20 @@ function PartTimeDashboard() {
               </div>
             </div>
           </div>
+          {timeclockInModal && (
+            <TimeclockModal
+              message="출근 하시겠습니까?"
+              timeClockModalToggle={timeClockInModalToggle}
+              clickClockIn={clickClockIn}
+            />
+          )}
+          {timeclockOutModal && (
+            <TimeclockModal
+              message="퇴근 하시겠습니까?"
+              timeClockModalToggle={timeClockOutModalToggle}
+              clickClockOut={clickClockOut}
+            />
+          )}
         </div>
       </div>
       <Footer />

@@ -1,52 +1,9 @@
-import axios from 'axios';
-import React, { useState } from 'react';
-import { APIURL } from 'config.js';
+import React from 'react';
 import './Modal.scss';
-import { useSelector } from 'react-redux';
-import client from 'utils/api';
+import useInviteModal from 'hooks/admin/useInviteModal';
 
 const InviteModal = ({ handleModal }) => {
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-  });
-
-  const { name, email } = form;
-
-  const locationId = useSelector(({ shop }) => shop._id);
-  const token = useSelector(({ user }) => user.token);
-
-  const onChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const onSubmit = (e) => {
-    e.preventDefault();
-
-    const postForm = async () => {
-      try {
-        const response = await client.post(`/location/${locationId}/invite`, {
-          name,
-          email,
-        });
-        alert('메일 전송 성공 !');
-        console.log(response);
-      } catch (e) {
-        console.log(e);
-        alert('메일 전송을 실패하였습니다.');
-      }
-    };
-
-    postForm();
-
-    setForm({
-      name: '',
-      email: '',
-    });
-  };
+  const { name, email, onChange, onSubmit } = useInviteModal();
 
   return (
     <div className="modal-container">

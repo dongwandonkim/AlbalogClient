@@ -5,33 +5,56 @@
   .txtline {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    height: 1.2rem;
+
+    svg {
+      width: 1rem;
+      margin: 0 1rem;
+      cursor: pointer;
+    }
   }
 
   .full-table {
     height: 100%;
     flex-direction: column;
     padding: 10px 0;
+    overflow-y: scroll;
 
     .tr {
       width: 100%;
-      padding: 2% 0;
       border-bottom: 1px solid lightgrey;
       align-items: center;
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
+      padding: 10px 10px;
 
-      .shift p {
-        font-size: 14px;
+      .worker {
+        width: 40%;
+      }
+      .worker p {
+        text-align: center;
+        font-size: 0.9rem;
+      }
+      .working-time {
+        width: 55%;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
 
-        & + & {
-          margin-top: 8px;
-        }
+      .working-time > p {
+        font-size: 0.9rem;
+        margin: 0 5px;
       }
 
       p {
         text-align: start;
       }
     }
+  }
+
+  .full-table::-webkit-scrollbar {
+    display: none;
   }
 }
